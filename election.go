@@ -41,7 +41,7 @@ func leaderElectionLoop(c *Client) {
 
 		_isLeaderSync.Lock()
 		prevIsLeader := _isLeader
-		if nodeIds[0] == NodeId {
+		if nodeIds[0] == c.nodeId {
 			_isLeader = true
 		} else {
 			_isLeader = false

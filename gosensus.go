@@ -9,14 +9,12 @@ import (
 	"time"
 )
 
-// the node id that is submitted to etcd for the leader election process
-var NodeId string
-
 type Client struct {
-	EtcdClient clientv3.Client
-	Logger     zap.Logger
+	EtcdClient *clientv3.Client
+	Logger     *zap.Logger
 	DataDir    string // the directory in which the node key is stored
 	quit       chan bool
+	nodeId     string // the node id of this node that is submitted to etcd for the leader election process
 }
 
 // Start initializes the consensus algorithm
@@ -55,6 +53,10 @@ func (c *Client) Stop() error {
 	return c.EtcdClient.Close()
 }
 
+func (c *Client) NodeId() string {
+	return c.nodeId
+}
+
 // registerNode registers the node in the etcd cluster and keeps the entry alive
 func registerNode(c *Client) error {
 	c.Logger.Info("registering our node in etcd")
@@ -63,9 +65,9 @@ func registerNode(c *Client) error {
 	if err != nil {
 		return err
 	}
-	NodeId = hex.EncodeToString(nodeKey.PubKey[:16])
+	c.nodeId = hex.EncodeToString(nodeKey.PubKey[:16])
 
-	c.Logger.Info("our node id is " + NodeId)
+	c.Logger.Info("our node id is " + c.nodeId)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	resp, err := c.EtcdClient.Grant(ctx, 5)
@@ -75,7 +77,7 @@ func registerNode(c *Client) error {
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-	_, err = c.EtcdClient.Put(ctx, "node:"+NodeId, ".", clientv3.WithLease(resp.ID))
+	_, err = c.EtcdClient.Put(ctx, "node:"+c.nodeId, ".", clientv3.WithLease(resp.ID))
 	cancel()
 	if err != nil {
 		return err
