@@ -6,23 +6,15 @@ import (
 	"go.uber.org/zap"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 )
 
-// _isLeader defines if this node is currently a leader
-// this variable may not be accessed from methods outside of this file
-// use the concurrency safe IsLeader() method instead
-var _isLeader = false
-var _isLeaderSync = new(sync.Mutex)
-
 // IsLeader returns whether the node is currently the leader.
-// This method is concurrency safe.
 // TODO: possible improvements: https://stackoverflow.com/a/52882045
-func IsLeader() (leader bool) {
-	_isLeaderSync.Lock()
-	leader = _isLeader
-	_isLeaderSync.Unlock()
+func (c *Client) IsLeader() (leader bool) {
+	c._isLeaderSync.Lock()
+	leader = c._isLeader
+	c._isLeaderSync.Unlock()
 	return
 }
 
@@ -39,17 +31,17 @@ func leaderElectionLoop(c *Client) {
 		// the node id with the lowest lexicographical order, nodeIds[0], is the leader
 		sort.Strings(nodeIds)
 
-		_isLeaderSync.Lock()
-		prevIsLeader := _isLeader
+		c._isLeaderSync.Lock()
+		prevIsLeader := c._isLeader
 		if nodeIds[0] == c.nodeId {
-			_isLeader = true
+			c._isLeader = true
 		} else {
-			_isLeader = false
+			c._isLeader = false
 		}
-		if !prevIsLeader == _isLeader {
-			c.Logger.Info("leadership status changed.", zap.Bool("leader", _isLeader))
+		if !prevIsLeader == c._isLeader {
+			c.Logger.Info("leadership status changed.", zap.Bool("leader", c._isLeader))
 		}
-		_isLeaderSync.Unlock()
+		c._isLeaderSync.Unlock()
 
 		// exit loop upon receiving quit signal
 		select {

@@ -6,15 +6,18 @@ import (
 	"errors"
 	"go.etcd.io/etcd/v3/clientv3"
 	"go.uber.org/zap"
+	"sync"
 	"time"
 )
 
 type Client struct {
-	EtcdClient *clientv3.Client
-	Logger     *zap.Logger
-	DataDir    string // the directory in which the node key is stored
-	quit       chan bool
-	nodeId     string // the node id of this node that is submitted to etcd for the leader election process
+	EtcdClient    *clientv3.Client
+	Logger        *zap.Logger
+	DataDir       string // the directory in which the node key is stored
+	quit          chan bool
+	nodeId        string // the node id of this node that is submitted to etcd for the leader election process
+	_isLeader     bool   // _isLeader defines if this node is currently a leader. This variable should not be used. Use the concurrency safe IsLeader() method instead
+	_isLeaderSync *sync.Mutex
 }
 
 // Start initializes the consensus algorithm
@@ -23,6 +26,8 @@ func (c *Client) Start() error {
 		return errors.New("no data dir specified")
 	}
 
+	c._isLeader = false
+	c._isLeaderSync = new(sync.Mutex)
 	c.Logger.Info("starting gosensus...")
 
 	// check if a node key exists and generate one if not
@@ -53,6 +58,8 @@ func (c *Client) Stop() error {
 	return c.EtcdClient.Close()
 }
 
+// NodeId returns the node id of this node
+// The node id is based on the node key
 func (c *Client) NodeId() string {
 	return c.nodeId
 }
