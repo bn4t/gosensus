@@ -53,9 +53,8 @@ func (c *Client) Start() error {
 
 // Stop stops gosensus from operating.
 // After 5 seconds this node's entry in etcd will expire and this node will be completely removed from the consensus algorithm
-func (c *Client) Stop() error {
+func (c *Client) Stop() {
 	c.quit <- true
-	return c.EtcdClient.Close()
 }
 
 // NodeId returns the node id of this node
