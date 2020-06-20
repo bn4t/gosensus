@@ -22,19 +22,19 @@ import (
 )
 
 func main() { 
-    // init etcd client
+        // init etcd client 
 	etcdCli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"http://localhost:2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	
-    // init zap logger
+        // init zap logger
 	Zap, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    // init gosensus client
+        // init gosensus client
 	GosClient := &gosensus.Client{
 		EtcdClient: etcdCli,
 		Logger:     Zap,
@@ -43,10 +43,10 @@ func main() {
 	if err := GosClient.Start(); err != nil {
 		log.Fatal("failed to start consensus", zap.Error(err))
 	}
-    
-    log.Print(GosClient.IsLeader())
-    
-    GosClient.Stop()
+	
+        log.Print(GosClient.IsLeader())
+	
+        GosClient.Stop()
 }
 
 ```
