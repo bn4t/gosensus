@@ -47,7 +47,7 @@ func (c *Client) Start() error {
 	if err := registerNode(c); err != nil {
 		return err
 	}
-	go leaderElectionLoop(c)
+	go c.leaderElectionLoop()
 	return nil
 }
 

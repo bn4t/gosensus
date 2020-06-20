@@ -18,9 +18,9 @@ func (c *Client) IsLeader() (leader bool) {
 }
 
 // leaderElectionLoop runs the leader election process every 5 seconds
-func leaderElectionLoop(c *Client) {
+func (c *Client) leaderElectionLoop() {
 	for {
-		nodeIds, err := getAllNodeIds(c)
+		nodeIds, err := c.GetAllNodeIds()
 		if err != nil {
 			c.Logger.Error("error while getting all node ids from etcd: ", zap.Error(err))
 			return
@@ -53,9 +53,9 @@ func leaderElectionLoop(c *Client) {
 	}
 }
 
-// getAllNodeIds grabs all nodes from etcd and returns all the ids in a slice
+// GetAllNodeIds grabs all nodes from etcd and returns all the ids in a slice
 // Important: this slice also contains the node id of this node
-func getAllNodeIds(c *Client) ([]string, error) {
+func (c *Client) GetAllNodeIds() ([]string, error) {
 	nodeIds := make([]string, 0)
 
 	// get all node ids
