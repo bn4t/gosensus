@@ -26,6 +26,13 @@ func (c *Client) leaderElectionLoop() {
 			return
 		}
 
+		// exit loop upon receiving quit signal
+		select {
+		case <-c.quit:
+			return
+		default:
+		}
+
 		// sort the node ids in lexicographical (increasing) order
 		// the node id with the lowest lexicographical order, nodeIds[0], is the leader
 		sort.Strings(nodeIds)
@@ -41,13 +48,6 @@ func (c *Client) leaderElectionLoop() {
 			c.Logger.Info("leadership status changed.", zap.Bool("leader", c._isLeader))
 		}
 		c._isLeaderSync.Unlock()
-
-		// exit loop upon receiving quit signal
-		select {
-		case <-c.quit:
-			return
-		default:
-		}
 
 		time.Sleep(5 * time.Second)
 	}

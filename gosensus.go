@@ -28,6 +28,7 @@ func (c *Client) Start() error {
 
 	c._isLeader = false
 	c._isLeaderSync = new(sync.RWMutex)
+	c.quit = make(chan bool)
 	c.Logger.Info("starting gosensus...")
 
 	// check if a node key exists and generate one if not
