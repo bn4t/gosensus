@@ -17,8 +17,8 @@ type nodeKey struct {
 }
 
 // getNodeKey returns the node key
-func getNodeKey() (nodeKey, error) {
-	seedFile, err := ioutil.ReadFile(path.Join(config.DataDir, "gosensus_node_key.pem"))
+func getNodeKey(dataDir string) (nodeKey, error) {
+	seedFile, err := ioutil.ReadFile(path.Join(dataDir, "gosensus_node_key.pem"))
 	if err != nil {
 		return nodeKey{}, err
 	}
@@ -38,14 +38,14 @@ func getNodeKey() (nodeKey, error) {
 // Use the first three bytes as the key-id.
 // The other 32 bytes are used as the seed for the ed25519 key.
 // 32 bytes is the default seed size of the golang ed25519 implementation.
-func generateNodeKey() error {
+func generateNodeKey(dataDir string) error {
 	var seed [35]byte
 	if _, err := rand.Read(seed[:]); err != nil {
 		return err
 	}
 
 	// open the key file
-	keyFile, err := os.OpenFile(path.Join(config.DataDir, "gosensus_node_key.pem"),
+	keyFile, err := os.OpenFile(path.Join(dataDir, "gosensus_node_key.pem"),
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
@@ -75,8 +75,8 @@ func generateNodeKey() error {
 }
 
 // nodeKeyExists tries to open the node key and returns
-func nodeKeyExists() (bool, error) {
-	info, err := os.Stat(path.Join(config.DataDir, "gosensus_node_key.pem"))
+func nodeKeyExists(dataDir string) (bool, error) {
+	info, err := os.Stat(path.Join(dataDir, "gosensus_node_key.pem"))
 	if err == nil {
 		return !info.IsDir(), nil
 	}

@@ -27,11 +27,11 @@ func IsLeader() (leader bool) {
 }
 
 // leaderElectionLoop runs the leader election process every 5 seconds
-func leaderElectionLoop() {
+func leaderElectionLoop(c *Client) {
 	for {
-		nodeIds, err := getAllNodeIds()
+		nodeIds, err := getAllNodeIds(c)
 		if err != nil {
-			config.Logger.Error("error while getting all node ids from etcd: ", zap.Error(err))
+			c.Logger.Error("error while getting all node ids from etcd: ", zap.Error(err))
 			return
 		}
 
@@ -47,9 +47,16 @@ func leaderElectionLoop() {
 			_isLeader = false
 		}
 		if !prevIsLeader == _isLeader {
-			config.Logger.Info("leadership status changed.", zap.Bool("leader", _isLeader))
+			c.Logger.Info("leadership status changed.", zap.Bool("leader", _isLeader))
 		}
 		_isLeaderSync.Unlock()
+
+		// exit loop upon receiving quit signal
+		select {
+		case <-c.quit:
+			return
+		default:
+		}
 
 		time.Sleep(5 * time.Second)
 	}
@@ -57,12 +64,12 @@ func leaderElectionLoop() {
 
 // getAllNodeIds grabs all nodes from etcd and returns all the ids in a slice
 // Important: this slice also contains the node id of this node
-func getAllNodeIds() ([]string, error) {
+func getAllNodeIds(c *Client) ([]string, error) {
 	nodeIds := make([]string, 0)
 
 	// get all node ids
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	resp, err := etcdClient.Get(ctx, "node:", clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
+	resp, err := c.EtcdClient.Get(ctx, "node:", clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 	cancel()
 	if err != nil {
 		return nil, err
