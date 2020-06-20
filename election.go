@@ -10,11 +10,10 @@ import (
 )
 
 // IsLeader returns whether the node is currently the leader.
-// TODO: possible improvements: https://stackoverflow.com/a/52882045
 func (c *Client) IsLeader() (leader bool) {
-	c._isLeaderSync.Lock()
+	c._isLeaderSync.RLock()
 	leader = c._isLeader
-	c._isLeaderSync.Unlock()
+	c._isLeaderSync.RUnlock()
 	return
 }
 

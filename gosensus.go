@@ -17,7 +17,7 @@ type Client struct {
 	quit          chan bool
 	nodeId        string // the node id of this node that is submitted to etcd for the leader election process
 	_isLeader     bool   // _isLeader defines if this node is currently a leader. This variable should not be used. Use the concurrency safe IsLeader() method instead
-	_isLeaderSync *sync.Mutex
+	_isLeaderSync *sync.RWMutex
 }
 
 // Start initializes the consensus algorithm
@@ -27,7 +27,7 @@ func (c *Client) Start() error {
 	}
 
 	c._isLeader = false
-	c._isLeaderSync = new(sync.Mutex)
+	c._isLeaderSync = new(sync.RWMutex)
 	c.Logger.Info("starting gosensus...")
 
 	// check if a node key exists and generate one if not
