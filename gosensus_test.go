@@ -73,7 +73,7 @@ func TestGosensus(t *testing.T) {
 	// shutdown the current leader and check if the other node takes over
 	if g1.IsLeader() {
 		g1.Stop()
-		zapLog.Info("shutdown current leader node node g1, waiting for consensus to settle again...")
+		zapLog.Info("shutdown current leader node g1, waiting for consensus to settle again...")
 		time.Sleep(15 * time.Second)
 
 		if !g2.IsLeader() {
@@ -84,7 +84,7 @@ func TestGosensus(t *testing.T) {
 		g2.Stop()
 	} else {
 		g2.Stop()
-		zapLog.Info("shutdown current leader node node g2, waiting for consensus to settle again...")
+		zapLog.Info("shutdown current leader node g2, waiting for consensus to settle again...")
 		time.Sleep(15 * time.Second)
 
 		if !g1.IsLeader() {
