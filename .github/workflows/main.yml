@@ -1,0 +1,24 @@
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+  pull_request:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: setup etcd
+        run: sudo apt update && sudo apt install -y etcd
+
+      - name: get dependencies
+        run: go get -t
+
+      - name: go test
+        run: go test -race -v ./...
