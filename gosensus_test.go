@@ -81,6 +81,7 @@ func TestGosensus(t *testing.T) {
 			cleanupTests()
 			zapLog.Fatal("node 2 is not leader despite being the only node in the cluster")
 		}
+		g2.Stop()
 	} else {
 		g2.Stop()
 		zapLog.Info("shutdown current leader node node g2, waiting for consensus to settle again...")
@@ -91,9 +92,9 @@ func TestGosensus(t *testing.T) {
 			cleanupTests()
 			zapLog.Fatal("node 1 is not leader despite being the only node in the cluster")
 		}
+		g1.Stop()
 	}
 
-	g2.Stop()
 	etcd.Close()
 	cleanupTests()
 }
