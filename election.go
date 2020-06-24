@@ -20,6 +20,7 @@ func (c *Client) IsLeader() (leader bool) {
 // leaderElectionLoop runs the leader election process every 5 seconds
 func (c *Client) leaderElectionLoop() {
 	for {
+		c.Logger.Debug("running election")
 		nodeIds, err := c.GetAllNodeIds()
 		if err != nil {
 			c.Logger.Error("error while getting all node ids from etcd: ", zap.Error(err))
@@ -28,7 +29,7 @@ func (c *Client) leaderElectionLoop() {
 
 		// exit loop upon receiving quit signal
 		select {
-		case <-c.quit:
+		case <-c.quitElection:
 			return
 		default:
 		}

@@ -13,10 +13,11 @@ import (
 type Client struct {
 	EtcdClient    *clientv3.Client
 	Logger        *zap.Logger
-	DataDir       string // the directory in which the node key is stored
-	quit          chan bool
-	nodeId        string // the node id of this node that is submitted to etcd for the leader election process
-	_isLeader     bool   // _isLeader defines if this node is currently a leader. This variable should not be used. Use the concurrency safe IsLeader() method instead
+	DataDir       string    // the directory in which the node key is stored
+	quitElection  chan bool // channel to stop the election loop
+	quitKeepAlive chan bool // channel to stop keeping the etcd node entry alive
+	nodeId        string    // the node id of this node that is submitted to etcd for the leader election process
+	_isLeader     bool      // _isLeader defines if this node is currently a leader. This variable should not be used. Use the concurrency safe IsLeader() method instead
 	_isLeaderSync *sync.RWMutex
 }
 
@@ -28,7 +29,8 @@ func (c *Client) Start() error {
 
 	c._isLeader = false
 	c._isLeaderSync = new(sync.RWMutex)
-	c.quit = make(chan bool)
+	c.quitElection = make(chan bool)
+	c.quitKeepAlive = make(chan bool)
 	c.Logger.Info("starting gosensus...")
 
 	// check if a node key exists and generate one if not
@@ -55,7 +57,8 @@ func (c *Client) Start() error {
 // Stop stops gosensus from operating.
 // After 5 seconds this node's entry in etcd will expire and this node will be completely removed from the consensus algorithm
 func (c *Client) Stop() {
-	c.quit <- true
+	c.quitElection <- true
+	c.quitKeepAlive <- true
 }
 
 // NodeId returns the node id of this node
@@ -91,11 +94,19 @@ func registerNode(c *Client) error {
 	}
 
 	// keep the node id entry alive
-	ctx = context.Background()
+	ctx, cancel = context.WithCancel(context.Background())
 	ch, kaerr := c.EtcdClient.KeepAlive(ctx, resp.ID)
 	if kaerr != nil {
 		return err
 	}
+
+	// stop keeping the entry alive when the shutdown signal is received
+	go func() {
+		select {
+		case <-c.quitKeepAlive:
+			cancel()
+		}
+	}()
 
 	// discard the keepalive response, make etcd library not complain
 	go func() {
