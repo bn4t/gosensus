@@ -1,4 +1,5 @@
 # Gosensus
+![Tests](https://github.com/onclick-IT/gosensus/workflows/CI/badge.svg?branch=master)
 
 This package implements a simple consensus algorithm to elect a leader among a number of nodes.
 
