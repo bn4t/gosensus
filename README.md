@@ -3,6 +3,8 @@
 
 This package implements a simple consensus algorithm to elect a leader among a number of nodes.
 
+Includes a test to ensure the election algorithm works correctly.
+
 ## Installation
 
 ```
