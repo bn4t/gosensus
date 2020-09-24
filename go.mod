@@ -1,4 +1,4 @@
-module github.com/onclick-IT/gosensus
+module github.com/bn4t/gosensus
 
 go 1.14
 

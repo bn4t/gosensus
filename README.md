@@ -1,12 +1,12 @@
 # Gosensus
-![Tests](https://github.com/onclick-IT/gosensus/workflows/CI/badge.svg?branch=master)
+![Tests](https://github.com/bn4t/gosensus/workflows/CI/badge.svg?branch=master)
 
 This package implements a simple consensus algorithm to elect a leader among a number of nodes.
 
 ## Installation
 
 ```
-go get github.com/onclick-IT/gosensus
+go get github.com/bn4t/gosensus
 ```
 
 ## How to use
@@ -15,7 +15,7 @@ go get github.com/onclick-IT/gosensus
 package main
 
 import (
-    "github.com/onclick-IT/gosensus"
+    "github.com/bn4t/gosensus"
     "go.etcd.io/etcd/v3/clientv3"
     "go.uber.org/zap"
     "log"
@@ -39,7 +39,7 @@ func main() {
 	GosClient := &gosensus.Client{
 		EtcdClient: etcdCli,
 		Logger:     Zap,
-		DataDir:    "/var/lib/gosensus/",
+		DataDir:    "/var/lib/gosensus/", // the directory in which the node's key is stored
 	}
 	if err := GosClient.Start(); err != nil {
 		log.Fatal("failed to start consensus", zap.Error(err))
@@ -53,4 +53,5 @@ func main() {
 ```
 
 ## License
-TBD
+
+MIT
